@@ -1,0 +1,87 @@
+<script>
+
+  var user_input = prompt("Введiть ИНН")
+
+  try {
+    console.log(createINN (user_input));
+  } catch (info) {
+    alert (info);
+  }
+
+  /*
+  code: “1234567890”,
+  isCorrect: true, //or false
+  sex: “female”, //or “male”
+  dateOfBirth: “23.12.1988”,
+  fullYears: 29
+  */
+  function createINN (str) {
+
+    // remove spaces
+    var code = str.replace(" ", "");
+
+    var isCorrect = isCorrectINN(code);
+
+    return isCorrect ?
+      {
+        code:         code,
+        isCorrect:    true,
+        sex:          getSexFromINN(code) ,
+        dateOfBirth:  getDateOfBirthfromINN(code),
+        fullYears:    getAgefromINN(code)
+      } :
+      {
+        code:         code,
+        isCorrect:    false
+      };
+  }
+
+  /*
+  Алгоритм проверки ИНН 10 знаков:
+  1. Вычисляется контрольная сумма со следующими весовыми коэффициентами: (2,4,10,3,5,9,4,6,8,0)
+  2. Вычисляется контрольное число как остаток от деления контрольной суммы на 11
+  3. Если контрольное число больше 9, то контрольное число вычисляется как остаток от деления контрольного числа на 10
+  4. Контрольное число проверяется с десятым знаком ИНН. В случае их равенства ИНН считается правильным.
+  */
+  function isCorrectINN (code) {
+    if (code.length != 10) {return false;}
+    //const weights = [2,4,10,3,5,9,4,6,8,0];
+    const weights = [-1, 5, 7, 9, 4, 6, 10, 5, 7, 0];
+    var code_digits = code.split("");
+    var control_sum = Math.round(code_digits.reduce(function(r,a,i){return r+a*weights[i]},0));
+    var control_figure = control_sum % 11;
+    control_figure = Math.round(control_figure) > 9 ? control_figure % 10 : control_figure;
+    return Math.round(control_figure) == Math.round(code_digits[9]);
+  }
+
+  /*
+  пол (чётность девятой цифры: четная цифра – женский, нечетная – мужской);
+  */
+  function getSexFromINN (code) {
+    return code.split("")[8] % 2 == 0 ? "female" : "male";
+  }
+
+  /*
+  дата рождения (первые пять цифр образуют число, равное количеству дней от 01.01.1900 до даты рождения владельца ИНН);
+  */
+  function getDateOfBirthfromINN (code) {
+    var days = parseInt(code.substring(0,5));
+    var dob = new Date("1900", "1", days);
+    return `${dob.getUTCDate()}.${dob.getUTCMonth()}.${dob.getUTCFullYear()}`;
+  }
+
+  function getAgefromINN (code) {
+    var days = parseInt(code.substring(0,5));
+    var dob = new Date("1900", "1", days);
+    var today = new Date();
+
+    var fullYears = today.getFullYear() - dob.getFullYear();
+    if (today.getMonth() < dob.getMonth() ||
+        today.getMonth() == dob.getMonth() && today.getDay() < dob.getDay()) {
+        fullYears--;
+    }
+
+    return fullYears;
+  }
+
+</script>

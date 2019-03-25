@@ -18,7 +18,7 @@
   function createINN (str) {
 
     // remove spaces
-    var code = str.replace(" ", "");
+    var code = str.split(' ').join('')
 
     var isCorrect = isCorrectINN(code);
 
